@@ -1,0 +1,266 @@
+#		                   					HELM - 2(EFK/ELK)
+# 								   --------------------------
+Install EFK Stack in K8's Cluster using helm -:
+---------------------------------------------------------
+> EFK -: ElasticSearch FileBeat And Kibana.
+ 
+What is the purpose of EFK -:
+-------------------------------------
+ > Monitoring, alerting and log aggregation are more essencial for the smooth functioning in a production grade k8s cluster.
+ > Application logs and system logs help understand what is happening inside a cluster. The logs are particularly use for debugging and monitoring cluster activity.
+ > In a microcervices architecture, a single business operation might trigger a chain of downstream microservice calls, which can be pretty challenging to debug. 
+ > Things, however, can be easier when the logs of all microservices are centralized and each log event contains details that allow us to trace the interactions between the applications.
+ 
+ >  Simply -:
+ ----------
+      > We can use Elastic stack along with Docker to collect, process, store, index and visualize logs of microcervices.
+      > We can store the logs and we can visualize the logs of the microservices. Using ELK STACK we can achive log aggregation.
+
+What is Elastic Stack -:
+------------------------------
+ > Elastic Stack is a group of open source applications from Elastic designed to take data from any source and in any format and then search, analyze, and visualize taht data in real time.
+ > It was a formerly known as ELK, In Which in the letters in the name stood for the applications in the group: ElasticSearch, Logstash, and Kibana. A fourth application, Beats, was subsequently added to the stack.
+ 
+ WHat is ElasticSearch -:
+ -------------------------------
+    > ElasticSearch it's a real-time distributed storage, and analytical engine designed for Horizontal scalability, Maximum relaibility, and easy management.
+	> It can be used for many purposes, So here we are using to store the logs from the multiple servers. and we can create an index to search the logs in an Elasticsearch.
+	
+ What is Kibana -:
+ ----------------------
+  > Kibana is an open source analytical and visualization platform, It designed to work with Elasticsearch.
+  > Kibana can be used to search, view, and interact with data stored in Elasticsearch indices, allowing advanced data analysis and visualizing data in a variety of charts, tables, and maps.
+  > Kibana will fecth the data from ElasticSearch and we can visualize the logs in kibana Dashboard.
+  
+  What is Beats -:
+-----------------------
+  > Beats are open source data shippers that can be installed as an agents on servers  to send operational data directly to ElasticSearch ot via Logstash.
+  > These beats we install as an agents on each server, These beats will collect and send the data/logs/metrics directly to the ElasticSearch or via Logstash.
+ 
+ > Types of Beats for different purposes -: 
+ ----------------------------------------------------
+        1) FileBeat:     Log files.  (Filebeat is designed to read files from your system. It is particularly useful for system and application log files, but can be used for any text files that you would like to index to Elasticsearch in some way).
+	2) MetricBeat:   Metrics.    (If we install this beat it'll send a metric data about resources(like cpu, memory, network related data & etc).).
+	3) PacketBeat:   Network data.( lightweight network packet analyzer, monitors network protocols to enable users to keep tabs on network latency, errors, response times, SLA performance, user access patterns and more).
+	4) HeartBeat:    Uptime monitoring. ( Heartbeat is a lightweight shipper for uptime monitoring. It monitors services basically by pinging them and then ships data to Elasticsearch for analysis and visualization).
+	5) Auditbeat:    Auditbeat performs a similar function on Linux platforms, monitoring user and process activity across your fleet. Auditd event data is analyzed and sent, in real time, to Elasticsearch for monitoring the security of your environment.
+	
+> As we intended to ship log files, Filebeat will be our choice.
+----------------------------------------------------------------------------
+  > Logstash is a powerful tool that intigrates, with a wide variety of deployments. it offers a large selection of plugins to help us parse, enrich, transform, and buffer data from a variety of sources.
+  > If the data requires additional processing that is not available in beats, then Logstash can be added to the deployment.
+  
+ Putting the process together -:
+ --------------------------------------
+  > The following illustration shows how the components of Elastic Stack interact with each other:
+  
+  > In Few Words -:
+  -----------------------
+   > Filebeat collects data frokm the log files and sends it to Logstash.
+   > Logstash enhances the data and sends it to ElasticSearch.
+   > ElasticSearch Stores and indexes the data.
+   > Kibana display the data stored in ElasticSearch.
+   
+Elastic Stack Architecture -:
+-------------------------------------
+ 
+#  > Log > Beats(Data Collection) > Logstash (Data Processing) > ElasticSearch (Storage) > Kibana (Visualize). 
+ 
+ > We have a Log file which are available in multiple servers > so we are running FileBeat as an agent in all worker instances. > so the ile beat will collect the log files and it'll directly send to the ElasticSearch or it can send via logstash and we can see logs on kibana dashboard.
+ 
+ > Logs           : Server logs that need to be analyzed are identified.
+ > Logstash       : Logstash It'll process the data before sending to the elastic search or we can directly sends logs to the the elastic search using file beat.
+ > ElasticSearch  : The transformed data from Logstash is store, Search, and indexed.
+ > Kibana         : Kibana uses ElasticSearch DB to Explore, Visualize, and Share.
+ 
+> Note -: "Here we are not using logstah directly we forward logs to elastic search".
+-------------------------------------------------------------------------------------
+
+#Intsallation process of ELK -: (Here we will do  ELK on K8s Cluster) 
+#-------------------------------------------------------------------------------------
+   > Here we will do  ELK on K8s Cluster and This ELK stack we will installing as a containers in a k8s cluster.
+
+# Prerequisites -:
+# -------------------
+   1) K8s Cluster with Storage Class Configuration(DYnamic Provisioning of volumes).
+       
+       > If storage Class is not Configured then make persistence enabled as false in helm velues file.(#Which is not suggestable as if pods are terminated and recreate we will lost the data).
+	 
+   2) Kubernetes nodes with minimum 4GB RAM with 2 Core Processer.
+   
+   3) Serever which has Kubectl & Helm Configured.
+
+#Install EFK(ELastic File Beat Kibana) Using Helm -:
+#---------------------------------------------------------------
+ 
+# Step - 1 -:
+# -------------
+ > Login to your master node 
+ > Check helm is installed or not                       -: helm ls
+ > Create a EFK Name space                              -: kubectl create namespace efk/elk  (under this efk/elk we are create our pods)
+ > Now add the Helm repo                                -: helm repo add elastic https://helm.elastic.co ( Add a helm repository where we have  a charts)
+ > Check the status                                     -: helm repo ls 
+ > Get the values form that helm elastic search         -: helm show values elastic/elasticsearch >> elasticsearch.values
+ > Now Edit that values file                            -: vi elasticsearch.values ( change as per requirements like min master nodes : 3, and resources min requests 2g  memory).
+    #> Update replicas & minimumMasterNodes, and Resource requests and limits (min: memory 2Gi) in elasticsearch.values.
+ > using Helm we install required applications          -: Helm install elasticsearch elastic/elasticsearch -f elasticsearch.values -n elk.
+ > Now we can check                                     -: helm ls -n efk (elastic search)
+ > we can see the objects which helm was created        -: kubectl get all -n efk.
+ > It was cerated a elastic search pod and service.
+
+# Step - 2-:
+# -------------
+# > Now we need to create a KIBANA -:
+#------------------------------------------------
+# > we have an another chart for kibana -:
+# ---------------------------------------------------
+ > helm show values elastic/kibana >> kibana.values (change the values and if it's a self managed k8s cluster then use NodePort or if it's a managed k8s cluster use LoadBalancer).
+ # Resource requests and limits(memory 1Gi) in & Service type as NodePort Or LoadBalancer And Port as 80.
+  > kibana.values
+  > helm install kibana elastic/kibana -f kibana.values -n efk/elk
+  > helm get all -n efk/elk    -: we can see th ekibana pod  and we can access kibana with service type loadbalanacer url.
+  >  Intsall file beat as a deamon set -: helm install filebeat elastic/filebeat -n efk/elk. ( it's an agent and it has to run on each node) (we install file beat is going to be created as a DeamonSet so each and every node has a copy of this pod for this filebeat) (It'll take the logs from server and send to elastic search).
+  # So we are installing file beat using helm chart but we need to update/change any values for filebeat we can go wi default values.)
+  
+  > kubectl get all -n efk/elk -: check all the pods are running or not.(elastic pod , Filebeat pod, kibana pod)..
+  > kubectl get pvc -n efk/elk -: That elastic search pod using volumes(PVC) and this PVC created a PV.
+  > kubectl get pv -n efk/elk -: Check The pv 
+  
+# > Optional -:
+# ---------------
+ > helm show values elastic/metricbeat >> metricbeat.values 
+ # Update hostNetworking as true
+ > helm install metricbeat elastic/metricbeat -f metricbeat.values -n elk
+----------------------------------------------------------------------------------------------------------------------------------- 
+#                                            Installation is completed
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#KIBANA DASHBOARD SETUP -:
+#---------------------------------------
+> Now we can check all pods -: kubectl get all -n efk/elk
+> Access the kibana using kibana pod exeternal loadbalanacer.
+> Copy That External Loadbalancer URL and paste on browser -: Now we can access the Elastic search.
+> Now we have to create an index so that it can process/support the search. so it'll search against that index.
+> First we get the dashboard page then choose the > Explore on my own Option > click on left side 3 lines > under observability click on Logs > we can see the system data under message option.
+
+#> Create an Index -:
+#---------------------------
+ > Click on 3 horizontal lines > underkibana choose Discover option >  click on create index pattern  > provide name  > next step under configursetup choose timestamp > click on create an index.
+	
+	
+ > Now Deploy some demo application and access from browser then we will see whatever the logs has been logged by that demo application in kibana dashboard.
+ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# This Simple Java Application will interact with mongo DB to persist to retrive the data.
+# Complete Manifest Where in single yml we defined Deployment & Service for SpringApp & PVC(with default  StorageClass),ReplicaSet & Service For Mongo.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springappdeployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springapp
+  template:
+    metadata:
+      name: springapppod
+      labels:
+        app: springapp
+    spec:
+      containers:
+      - name: springappcontainer
+        image: dockerhandson/spring-boot-mongo
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MONGO_DB_USERNAME
+          value: devdb
+        - name: MONGO_DB_PASSWORD
+          value: devdb@123
+        - name: MONGO_DB_HOSTNAME
+          value: mongo 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springapp
+spec:
+  selector:
+    app: springapp
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodbpvc 
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: mongodbrs
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+     metadata:
+       name: mongodbpod
+       labels:
+         app: mongodb
+     spec:
+       volumes:
+       - name: pvc
+         persistentVolumeClaim:
+           claimName: mongodbpvc     
+       containers:
+       - name: mongodbcontainer
+         image: mongo
+         ports:
+         - containerPort: 27017
+         env:
+         - name: MONGO_INITDB_ROOT_USERNAME
+           value: devdb
+         - name: MONGO_INITDB_ROOT_PASSWORD
+           value: devdb@123
+         volumeMounts:
+         - name: pvc
+           mountPath: /data/db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+spec:
+  type: ClusterIP
+  selector:
+    app: mongodb
+  ports:
+  - port: 27017
+    targetPort: 27017
+----------------------------------------------------------------------------------------------------------------------------------------
+
+#Deploy This application -:
+#-------------------------------
+ > kubectl apply -f manifetymlfilename(sampleapp.yml)
+ > kubectl get all
+ > kubectl get all -n efk/elk
+ > so we deploy this application now we can acccess using service type loadbalncer copy the loadbalancer external ip and paste on browser.
+ > Insert some data and submit.
+ > So now this application is running as a deployment we have two replicas for accessing this service we use service type of loadbalanacer and this app is going to talk to the DB. it'll insert the data and retrive the data from the mongo DB.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ > If something went wrong in our application/some errors are occured in our application, so it's very difficult to get logs in a distributed environement.(our application is running on diff different containers in a nodes, pods),
+ > So it's very difficult to go to each node and gather the logs.( like kubectl get pods and check the logs in a specific pod (kubectl logs and podis).
+ > So now we don't need to go to each and every pod for checking the logs. bcs we install file beat pod on each and every node which is running as a deamonset).
+ > If i wanna see all my logs of a pods with springboot 
+ > Then go to kibana dashboard > go to logs under observability > and search like (kubernetes.pod.name: *springboot).
+ > we can use some log framwork(Keywords) to seach the logs also (Like "Total Users").
+ > If you wanna customize the results we can customize -: For that go to settings > under Log Columns we have an option called Add Column(Click on it) > Search (pod name, pod id, & etc) > click on apply > we can get that information.
