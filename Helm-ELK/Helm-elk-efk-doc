@@ -24,7 +24,7 @@ What is Elastic Stack -:
  WHat is ElasticSearch -:
  -------------------------------
     > ElasticSearch it's a real-time distributed storage, and analytical engine designed for Horizontal scalability, Maximum relaibility, and easy management.
-	> It can be used for many purposes, So here we are using to store the logs from the multiple servers. and we can create an index to search the logs in an Elasticsearch.
+    > It can be used for many purposes, So here we are using to store the logs from the multiple servers. and we can create an index to search the logs in an Elasticsearch.
 	
  What is Kibana -:
  ----------------------
