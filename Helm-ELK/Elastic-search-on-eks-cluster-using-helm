@@ -5,8 +5,8 @@ Steps to deploy elastic search on eks using helm with dynamic volumes
 
    > log in to master server 
    > Create a NameSpace for elasticsearch for ex elk.
-   > deploy metric server 
-   > deploy the cluster-autoscaler 
+   > deploy metric server -n kube-system
+   > deploy the cluster-autoscaler -n kube-system
    > verify these below tags on eks clsuer for cluster level  and node group level 
 
                 Key	                                                       Value
