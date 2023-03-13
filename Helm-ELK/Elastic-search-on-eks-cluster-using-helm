@@ -1,96 +1,96 @@
 Steps to deploy elastic search on eks using helm with dynamic volumes
 -----------------------------------------------------------------------
-> Create a cluster with required permisions -:
+# Create a cluster with required permisions -:
 ==============================================
 
-> log in to master server 
-> Create a NameSpace for elasticsearch for ex elk.
-> deploy metric server 
-> deploy the cluster-autoscaler 
-> verify these below tags on eks clsuer for cluster level  and node group level 
+   > log in to master server 
+   > Create a NameSpace for elasticsearch for ex elk.
+   > deploy metric server 
+   > deploy the cluster-autoscaler 
+   > verify these below tags on eks clsuer for cluster level  and node group level 
 
                 Key	                                                       Value
       k8s.io/cluster-autoscaler/my-cluster	                               owned
       k8s.io/cluster-autoscaler/enabled	                                        true
 
-> Install the AWS EBS CSI driver by running the following command -:
+# Install the AWS EBS CSI driver by running the following command -:
 ====================================================================
 
-    helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+   >  helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
 
-    helm install aws-ebs-csi-driver aws-ebs-csi-driver/aws-ebs-csi-driver --namespace kube-system --set enableVolumeScheduling=true --set enableVolumeResizing=true --set enableVolumeSnapshot=true
+   > helm install aws-ebs-csi-driver aws-ebs-csi-driver/aws-ebs-csi-driver --namespace kube-system --set enableVolumeScheduling=true --set enableVolumeResizing=true --set enableVolumeSnapshot=true
 
-> Verify all the obejcts -:
+# Verify all the obejcts -:
 ---------------------------
-   kubectl  get pv -n elk 
-   kubectl  get pvc -n elk 
-   kubectl   get sc -n elk 
+    >  kubectl  get pv -n elk 
+    > kubectl  get pvc -n elk 
+    > kubectl   get sc -n elk 
 
-> Create an ElasticSearch cluster by running the following command:
+# Create an ElasticSearch cluster by running the following command:
 ===================================================================
 
-helm repo add elastic https://helm.elastic.co
+> helm repo add elastic https://helm.elastic.co
 
-helm install elasticsearch elastic/elasticsearch --set volumeClaimTemplate.storageClassName=ebs-sc --set volumeClaimTemplate.resources.requests.storage=10Gi
+> helm install elasticsearch elastic/elasticsearch --set volumeClaimTemplate.storageClassName=ebs-sc --set volumeClaimTemplate.resources.requests.storage=10Gi
 
 [Note that the volumeClaimTemplate.storageClassName parameter should match the name of the StorageClass you want to use. In this example, we are using ebs-sc.]
 
 
-> Check that the PersistentVolumeClaim has been created successfully :
+# Check that the PersistentVolumeClaim has been created successfully :
 =====================================================================
 
-  kubectl get pvc
+  > kubectl get pvc
 
-> Verify all the services of elk -:
+# Verify all the services of elk -:
 ==================================
 
-   kubectl get all -n elk 
+   > kubectl get all -n elk 
 
-> Deploy the Kibana Helm chart to access the ElasticSearch cluster:
+# Deploy the Kibana Helm chart to access the ElasticSearch cluster:
 ===================================================================
     
-   helm install kibana elastic/kibana --set service.type=LoadBalancer --set elasticsearchHosts=http://elasticsearch-master:9200
+   >  helm install kibana elastic/kibana --set service.type=LoadBalancer --set elasticsearchHosts=http://elasticsearch-master:9200
 
    [Note that the elasticsearchHosts parameter should match the name of the ElasticSearch service that was created by the Helm chart.]
 
-> Verify that the Kibana service has been created successfully:
+# Verify that the Kibana service has been created successfully:
   =============================================================
         
-        kubectl get svc   or kubectl get all -n elk(ns-name)
+       > kubectl get svc   or kubectl get all -n elk(ns-name)
 
   [That's it! You have now created a dynamic volume for ElasticSearch using Helm on an EKS cluster.]
   
 =====================================================================================================================================================================================
 
 
-> Back-end process of dynamic-ebs- vloume -:
+# Back-end process of dynamic-ebs- vloume -:
 =============================================
 
-When you create a dynamic EBS volume for ElasticSearch on EKS, the Kubernetes cluster will use the AWS EBS CSI driver to create and manage the EBS volumes.
+ > When you create a dynamic EBS volume for ElasticSearch on EKS, the Kubernetes cluster will use the AWS EBS CSI driver to create and manage the EBS volumes.
 
 
-Here's what happens in the backend when you create a dynamic EBS volume for ElasticSearch on EKS:
--------------------------------------------------------------------------------------------------
+# Here's what happens in the backend when you create a dynamic EBS volume for ElasticSearch on EKS:
+  -------------------------------------------------------------------------------------------------
 
-  Kubernetes will create a PersistentVolumeClaim (PVC) object that requests a certain amount of storage from the storage class that you specified. 
+ >  Kubernetes will create a PersistentVolumeClaim (PVC) object that requests a certain amount of storage from the storage class that you specified. 
   
-  In this case, we specified the AWS EBS storage class.
+ >  In this case, we specified the AWS EBS storage class.
 
-  The Kubernetes scheduler will look for an available node that has the appropriate storage class available.
+ >  The Kubernetes scheduler will look for an available node that has the appropriate storage class available.
 
-  Once a suitable node is found, Kubernetes will instruct the AWS EBS CSI driver to create an EBS volume that matches the specifications of the PVC.
+ >  Once a suitable node is found, Kubernetes will instruct the AWS EBS CSI driver to create an EBS volume that matches the specifications of the PVC.
 
-  The AWS EBS CSI driver will create the EBS volume in the specified Availability Zone and attach it to the node that was selected by Kubernetes.
+ >  The AWS EBS CSI driver will create the EBS volume in the specified Availability Zone and attach it to the node that was selected by Kubernetes.
 
-  The EBS volume will be formatted with the appropriate file system and mounted as a block device on the selected node.
+ >  The EBS volume will be formatted with the appropriate file system and mounted as a block device on the selected node.
 
-  The Kubernetes cluster will create an ElasticSearch Pod that uses the PVC to mount the EBS volume.
+ >  The Kubernetes cluster will create an ElasticSearch Pod that uses the PVC to mount the EBS volume.
 
-  The ElasticSearch Pod will use the mounted EBS volume as the primary data directory for the ElasticSearch service.
+ >  The ElasticSearch Pod will use the mounted EBS volume as the primary data directory for the ElasticSearch service.
 
-  In summary, the AWS EBS CSI driver enables Kubernetes to dynamically create and manage EBS volumes as needed for ElasticSearch on EKS. 
+ >  In summary, the AWS EBS CSI driver enables Kubernetes to dynamically create and manage EBS volumes as needed for ElasticSearch on EKS. 
    
-  This makes it easy to scale and manage ElasticSearch clusters in a cloud-native way.
+ >  This makes it easy to scale and manage ElasticSearch clusters in a cloud-native way.
 
  > verify the pv and pvc and sc on ns
 
@@ -101,33 +101,57 @@ Here's what happens in the backend when you create a dynamic EBS volume for Elas
  > check the service of sts and change the svc type to LoadBalancer and try to access the elk dashboard using that url.
 
 
-> Purpose of ElasticSearch -:
+# Purpose of ElasticSearch -:
   =======================
 
-Elasticsearch is a powerful search and analytics engine that is used to index and search large volumes of data quickly and efficiently. 
+> Elasticsearch is a powerful search and analytics engine that is used to index and search large volumes of data quickly and efficiently. 
 
-It is often used in conjunction with other tools in the Elastic Stack, such as Kibana, Logstash, and Beats, to provide a comprehensive solution for logging, monitoring, and analyzing data.
+> It is often used in conjunction with other tools in the Elastic Stack, such as Kibana, Logstash, and Beats, to provide a comprehensive solution for logging, monitoring, and analyzing data.
 
-To access Elasticsearch from the browser, you will need to expose the service to the public internet by creating a Kubernetes LoadBalancer service or NodePort service. 
+> To access Elasticsearch from the browser, you will need to expose the service to the public internet by creating a Kubernetes LoadBalancer service or NodePort service. 
 
-You can do this by creating a Kubernetes manifest file or using a tool like Helm to deploy Elasticsearch to your EKS cluster.
+> You can do this by creating a Kubernetes manifest file or using a tool like Helm to deploy Elasticsearch to your EKS cluster.
 
-Additional Information -:
-=================
-When creating an Elasticsearch deployment in Kubernetes, it's common to create two services: a headless service and a cluster IP service.
 
-The headless service is used to enable DNS lookups for the Elasticsearch pods. 
+# Additional Information -: 
+  ========================
+> When creating an Elasticsearch deployment in Kubernetes, it's common to create two services: a headless service and a cluster IP service.
 
-By default, Kubernetes creates a DNS entry for each pod in a headless service, allowing clients to discover all of the available endpoints. 
+> The headless service is used to enable DNS lookups for the Elasticsearch pods. 
 
-This is important for Elasticsearch, as it allows it to discover all of the nodes in the cluster and distribute data and requests across them.
+> By default, Kubernetes creates a DNS entry for each pod in a headless service, allowing clients to discover all of the available endpoints. 
 
-The cluster IP service is used to provide a stable IP address and port for external clients to access Elasticsearch. 
+> This is important for Elasticsearch, as it allows it to discover all of the nodes in the cluster and distribute data and requests across them.
 
-This service acts as a load balancer, distributing incoming traffic across all of the available Elasticsearch pods. 
+> The cluster IP service is used to provide a stable IP address and port for external clients to access Elasticsearch. 
 
-By default, the cluster IP service is only accessible within the Kubernetes cluster and is not exposed to the public internet.
+> This service acts as a load balancer, distributing incoming traffic across all of the available Elasticsearch pods. 
 
-Both of these services are necessary for Elasticsearch to function properly in a Kubernetes environment.
+> By default, the cluster IP service is only accessible within the Kubernetes cluster and is not exposed to the public internet.
 
-The headless service allows Elasticsearch to discover all of the nodes in the cluster, while the cluster IP service provides a stable endpoint for external clients to access the cluster.
+> Both of these services are necessary for Elasticsearch to function properly in a Kubernetes environment.
+
+> The headless service allows Elasticsearch to discover all of the nodes in the cluster, while the cluster IP service provides a stable endpoint for external clients to access the cluster.
+
+# Difference B/w Elastic search and Kibana -:
+=============================================
+> Elasticsearch and Kibana are both tools that are part of the Elastic Stack, which is an open-source suite of tools for search, analytics, and visualization of data.
+
+> Elasticsearch is a distributed, scalable search and analytics engine that allows you to store, search, and analyze large amounts of data quickly and in near real-time.
+
+> Elasticsearch provides powerful search capabilities, including full-text search, aggregations, and geospatial search, and it can be used for a variety of use cases such as logging, metrics, security analytics, and more.
+
+> On the other hand, Kibana is a data visualization and exploration tool that provides a web interface for querying and analyzing data stored in Elasticsearch. 
+
+> With Kibana, you can create interactive dashboards, visualizations, and maps to explore and understand your data.
+
+> Kibana provides a variety of built-in visualization types, such as bar charts, line charts, tables, and maps, and it also allows you to create custom visualizations using a powerful scripting language.
+
+> In summary, Elasticsearch is a powerful search and analytics engine that stores and indexes data, while Kibana is a data visualization and exploration tool that provides a user-friendly interface for querying and analyzing that data. 
+
+> Together, Elasticsearch and Kibana form a powerful data analytics and visualization platform that can be used for a wide range of use cases.
+
+
+
+
+
