@@ -11,7 +11,7 @@ Steps to deploy elastic search on eks using helm with dynamic volumes
 
                 Key	                                                       Value
       k8s.io/cluster-autoscaler/my-cluster	                               owned
-      k8s.io/cluster-autoscaler/enabled	                                      true
+      k8s.io/cluster-autoscaler/enabled	                                        true
 
 > Install the AWS EBS CSI driver by running the following command -:
 ====================================================================
