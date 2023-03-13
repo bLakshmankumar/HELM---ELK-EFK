@@ -128,6 +128,6 @@ This service acts as a load balancer, distributing incoming traffic across all o
 
 By default, the cluster IP service is only accessible within the Kubernetes cluster and is not exposed to the public internet.
 
-Both of these services are necessary for Elasticsearch to function properly in a Kubernetes environment. T
+Both of these services are necessary for Elasticsearch to function properly in a Kubernetes environment.
 
-he headless service allows Elasticsearch to discover all of the nodes in the cluster, while the cluster IP service provides a stable endpoint for external clients to access the cluster.
+The headless service allows Elasticsearch to discover all of the nodes in the cluster, while the cluster IP service provides a stable endpoint for external clients to access the cluster.
