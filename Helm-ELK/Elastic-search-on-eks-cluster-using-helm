@@ -154,8 +154,24 @@ Steps to deploy elastic search on eks using helm with dynamic volumes
 > In summary, Elasticsearch is a powerful search and analytics engine that stores and indexes data, while Kibana is a data visualization and exploration tool that provides a user-friendly interface for querying and analyzing that data. 
 
 > Together, Elasticsearch and Kibana form a powerful data analytics and visualization platform that can be used for a wide range of use cases.
+============================================================================================================================================================================================================================================\
 
+# Different pods on HPA values.yaml using helm -:
+  =============================================
 
+  > In the context of ElasticSearch, "coordinating-pod", "master-pod", "ingest-pod", and "data-pod" are different types of pods that can be used to deploy and scale an ElasticSearch cluster using the Horizontal Pod Autoscaler (HPA) feature in Kubernetes.
+
+  # Here is a brief overview of each type of pod:
+    ---------------------------------------------
+> Coordinating-pod: This type of pod acts as a traffic cop, routing search and indexing requests to the appropriate data node in the ElasticSearch cluster. Coordinating pods are typically lightweight and stateless, and are used to improve the scalability and availability of the ElasticSearch cluster.
+
+> Master-pod: This type of pod is responsible for managing the overall state of the ElasticSearch cluster, including the allocation of shards and replicas. Master pods are typically deployed in a highly available configuration with multiple replicas to prevent data loss in the event of a failure.
+
+> Ingest-pod: This type of pod is used to apply data transformations and enrichments to incoming data before it is indexed in the ElasticSearch cluster. Ingest pods can be used to perform tasks such as data parsing, filtering, and normalization.
+
+> Data-pod: This type of pod is responsible for storing and serving data in the ElasticSearch cluster. Data pods typically have access to local storage and are optimized for high throughput and low latency.
+
+> When using the HPA feature in Kubernetes to scale an ElasticSearch cluster, you can specify different resource requests and limits for each type of pod to ensure optimal performance and resource utilization.
 
 
 
