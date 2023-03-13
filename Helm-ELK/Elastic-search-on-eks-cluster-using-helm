@@ -135,12 +135,16 @@ Steps to deploy elastic search on eks using helm with dynamic volumes
 
 # Difference B/w Elastic search and Kibana -:
 =============================================
+ # Elastic-search -:
+ -------------------
 > Elasticsearch and Kibana are both tools that are part of the Elastic Stack, which is an open-source suite of tools for search, analytics, and visualization of data.
 
 > Elasticsearch is a distributed, scalable search and analytics engine that allows you to store, search, and analyze large amounts of data quickly and in near real-time.
 
 > Elasticsearch provides powerful search capabilities, including full-text search, aggregations, and geospatial search, and it can be used for a variety of use cases such as logging, metrics, security analytics, and more.
 
+  # KIBANA -:
+  -----------
 > On the other hand, Kibana is a data visualization and exploration tool that provides a web interface for querying and analyzing data stored in Elasticsearch. 
 
 > With Kibana, you can create interactive dashboards, visualizations, and maps to explore and understand your data.
